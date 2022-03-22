@@ -1,14 +1,12 @@
 # MixFormer
 
-The official implementation of the CVPR2022 paper [**MixFormer: End-to-End Tracking with Iterative Mixed Attention**](http://arxiv.org/abs/2203.11082)
+The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Tracking with Iterative Mixed Attention**](http://arxiv.org/abs/2203.11082)
 
-[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/mixformer-end-to-end-tracking-with-iterative/visual-object-tracking-on-got-10k)](https://paperswithcode.com/sota/visual-object-tracking-on-got-10k?p=mixformer-end-to-end-tracking-with-iterative)
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/mixformer-end-to-end-tracking-with-iterative-1/visual-object-tracking-on-got-10k)](https://paperswithcode.com/sota/visual-object-tracking-on-got-10k?p=mixformer-end-to-end-tracking-with-iterative-1)
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/mixformer-end-to-end-tracking-with-iterative-1/visual-object-tracking-on-uav123)](https://paperswithcode.com/sota/visual-object-tracking-on-uav123?p=mixformer-end-to-end-tracking-with-iterative-1)
 
-[[Models and Raw results]](https://drive.google.com/drive/folders/1wyeIs3ytYkmAtTXoVlLMkJ4aSTq5CBHq?usp=sharing) (Google Driver)
-
-[[Models and Raw results]](https://pan.baidu.com/s/1k819gnFMav9t1-8ZhCo74w) (Baidu Driver: hmuv)
+[[Models and Raw results]](https://drive.google.com/drive/folders/1wyeIs3ytYkmAtTXoVlLMkJ4aSTq5CBHq?usp=sharing) (Google Driver)  [[Models and Raw results]](https://pan.baidu.com/s/1k819gnFMav9t1-8ZhCo74w) (Baidu Driver: hmuv)
 
 
 ![MixFormer_Framework](tracking/mixformer_framework.png)
