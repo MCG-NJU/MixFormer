@@ -1,12 +1,6 @@
 # MixFormer
 
-[comment]: <> ([![PWC]&#40;https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/learning-spatio-temporal-transformer-for/visual-object-tracking-on-lasot&#41;]&#40;https://paperswithcode.com/sota/visual-object-tracking-on-lasot?p=learning-spatio-temporal-transformer-for&#41;  )
-
-[comment]: <> ([![PWC]&#40;https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/learning-spatio-temporal-transformer-for/visual-object-tracking-on-got-10k&#41;]&#40;https://paperswithcode.com/sota/visual-object-tracking-on-got-10k?p=learning-spatio-temporal-transformer-for&#41;  )
-
-[comment]: <> ([![PWC]&#40;https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/learning-spatio-temporal-transformer-for/visual-object-tracking-on-trackingnet&#41;]&#40;https://paperswithcode.com/sota/visual-object-tracking-on-trackingnet?p=learning-spatio-temporal-transformer-for&#41;)
-
-The official implementation of the CVPR2022 paper [**MixFormer: End-to-End Tracking with Iterative Mixed Attention**](https://gitee.com/yutaocui/mixformer) 
+The official implementation of the CVPR2022 paper [**MixFormer: End-to-End Tracking with Iterative Mixed Attention**](http://arxiv.org/abs/2203.11082) 
 
 [[Models and Raw results]](https://drive.google.com/drive/folders/1wyeIs3ytYkmAtTXoVlLMkJ4aSTq5CBHq?usp=sharing) (Google Driver)
 
@@ -29,9 +23,10 @@ doesn's use positional embedding, attentional mask and multi-layer feature aggre
 | Tracker | VOT2020 (EAO) | LaSOT (NP)| GOT-10K (AO)| TrackingNet (NP)|
 |---|---|---|---|---|
 |**MixFormer**|**0.555**|**79.9**|**70.7**|**88.9**|
+ToMP101* (CVPR2022)|-|68.5|-|86.4|
+|SBT-large* (CVPR2022)|0.529|-|70.4|-|
 |SwinTrack* (Arxiv2021)|-|78.6|69.4|88.2|
 |Sim-L/14* (Arxiv2022)|-|79.7|69.8|87.4|
-|SBT-large* (CVPR2022)|0.529|-|70.4|-|
 |STARK (ICCV2021)|0.505|77.0|68.8|86.9|
 |KeepTrack (ICCV2021)|-|77.2|-|-|
 |TransT (CVPR2021)|0.495|73.8|67.1|86.7|
@@ -42,7 +37,7 @@ doesn's use positional embedding, attentional mask and multi-layer feature aggre
 
 ## News
 
-**[Mar 20, 2022]**
+**[Mar 21, 2022]**
 - MixFormer is accepted by CVPR2022.
 - We release Code, models and raw results.
 
