@@ -3,5 +3,4 @@
 *__pycache__*
 *.pyc
 *.pytest_cache
-test*.py
 *.csv
