@@ -23,7 +23,7 @@ doesn's use positional embedding, attentional mask and multi-layer feature aggre
 | Tracker | VOT2020 (EAO) | LaSOT (NP)| GOT-10K (AO)| TrackingNet (NP)|
 |---|---|---|---|---|
 |**MixFormer**|**0.555**|**79.9**|**70.7**|**88.9**|
-ToMP101* (CVPR2022)|-|68.5|-|86.4|
+ToMP101* (CVPR2022)|-|79.2|-|86.4|
 |SBT-large* (CVPR2022)|0.529|-|70.4|-|
 |SwinTrack* (Arxiv2021)|-|78.6|69.4|88.2|
 |Sim-L/14* (Arxiv2022)|-|79.7|69.8|87.4|
