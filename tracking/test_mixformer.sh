@@ -47,20 +47,23 @@ python tracking/analysis_results.py --dataset_name lasot --tracker_param baselin
 ##########-------------- MixFormer-1k-----------------##########
 ### LaSOT test and evaluation
 #python tracking/test.py mixformer_online baseline_1k --dataset lasot --threads 32 --num_gpus 8 --params__model mixformer_online_1k.pth.tar --params__search_area_scale 4.5
-#python tracking/analysis_results.py --dataset_name lasot --tracker_param baseline
+#python tracking/analysis_results.py --dataset_name lasot --tracker_param baseline_1k
 
 ### Trackingnet test and pack
 #python tracking/test.py mixformer baseline_1k --dataset trackingnet --threads 32 --num_gpus 8 --params__model mixformer_online_1k.pth.tar --params__search_area_scale 4.5
-#python lib/test/utils/transform_trackingnet.py --tracker_name mixformer_online --cfg_name baseline
+#python lib/test/utils/transform_trackingnet.py --tracker_name mixformer_online --cfg_name baseline_1k
 
 ### MixFormer-1k-got-only GOT10k test and pack
 #python tracking/test.py mixformer_online baseline_1k --dataset got10k_test --threads 32 --num_gpus 8 --params__model mixformer_online_got_1k.pth.tar --params__search_area_scale 4.55
-#python lib/test/utils/transform_got10k.py --tracker_name mixformer_online --cfg_name baseline
+#python lib/test/utils/transform_got10k.py --tracker_name mixformer_online --cfg_name baseline_1k
+
+#python tracking/test.py mixformer_online baseline_1k --dataset got10k_test --threads 32 --num_gpus 32 --params__model mixformer_online_1k.pth.tar --params__search_area_scale 4.55
+#python lib/test/utils/transform_got10k.py --tracker_name mixformer_online --cfg_name baseline_1k
 
 ### OTB100 test and evaluation
 #python tracking/test.py mixformer_online baseline_1k --dataset otb --threads 32 --num_gpus 8 --params__model mixformer_online_1k.pth.tar --params__search_area_scale 4.5
-#python tracking/analysis_results.py --dataset_name otb --tracker_param baseline
+#python tracking/analysis_results.py --dataset_name otb --tracker_param baseline_1k
 
 ### UAV123 test and evaluation
 #python tracking/test.py mixformer_online baseline_1k --dataset uav --threads 32 --num_gpus 8 --params__model mixformer_online_1k.pth.tar --params__search_area_scale 4.55
-#python tracking/analysis_results.py --dataset_name uav --tracker_param baseline
+#python tracking/analysis_results.py --dataset_name uav --tracker_param baseline_1k
