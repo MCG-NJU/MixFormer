@@ -125,6 +125,11 @@ bash tracking/vis_mixformer_attn.sh
 The trained models and the raw tracking results are provided in the [[Models and Raw results]](https://drive.google.com/drive/folders/1wyeIs3ytYkmAtTXoVlLMkJ4aSTq5CBHq?usp=sharing) (Google Driver) or
 [[Models and Raw results]](https://pan.baidu.com/s/1k819gnFMav9t1-8ZhCo74w) (Baidu Driver: hmuv).
 
+## Contact
+Yutao Cui: cuiyutao@smail.nju.edu.cn 
+
+Cheng Jiang: mg1933027@smail.nju.edu.cn
+
 ## Acknowledgments
 * Thanks for [PyTracking](https://github.com/visionml/pytracking) Library and [STARK](https://github.com/researchmm/Stark) Library, which helps us to quickly implement our ideas.
 * We use the implementation of the CvT from the official repo [CvT](https://github.com/leoxiaobin/CvT).  
