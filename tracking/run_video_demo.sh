@@ -1,4 +1,5 @@
-# We only support manually setting the bounding box of first frame and save the results in debug director.
+# We only support manually setting the bounding box of first frame and save the results in debug directory.
+# We plan to release a colab for running your own video demo in the future.
 
 ##########-------------- MixFormer-22k-----------------##########
 python tracking/video_demo.py mixformer_online baseline /YOURS/VIDEO/PATH  \
