@@ -23,7 +23,7 @@ class MixFormerOnline(BaseTracker):
         self.preprocessor = Preprocessor_wo_mask()
         self.state = None
         # for debug
-        self.debug = False
+        self.debug = params.debug
         self.frame_id = 0
         if self.debug:
             self.save_dir = "debug"
@@ -38,11 +38,11 @@ class MixFormerOnline(BaseTracker):
         if hasattr(self.cfg.TEST.UPDATE_INTERVALS, DATASET_NAME):
             self.update_intervals = self.cfg.TEST.UPDATE_INTERVALS[DATASET_NAME]
             self.online_sizes = self.cfg.TEST.ONLINE_SIZES[DATASET_NAME]
+            self.online_size = self.online_sizes[0]
         else:
             self.update_intervals = self.cfg.DATA.MAX_SAMPLE_INTERVAL
             self.online_size = 3
         self.update_interval = self.update_intervals[0]
-        self.online_size = self.online_sizes[0]
         if hasattr(params, 'online_sizes'):
             self.online_size = params.online_sizes
         print("Online size is: ", self.online_size)
@@ -170,10 +170,10 @@ class MixFormerOnline(BaseTracker):
         # for debug
         if self.debug:
             x1, y1, w, h = self.state
-            image_BGR = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            cv2.rectangle(image_BGR, (int(x1),int(y1)), (int(x1+w),int(y1+h)), color=(0,0,255), thickness=2)
+            # image_BGR = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            cv2.rectangle(image, (int(x1),int(y1)), (int(x1+w),int(y1+h)), color=(0,0,255), thickness=2)
             save_path = os.path.join(self.save_dir, "%04d.jpg" % self.frame_id)
-            cv2.imwrite(save_path, image_BGR)
+            cv2.imwrite(save_path, image)
         if self.save_all_boxes:
             '''save all predictions'''
             all_boxes = self.map_box_back_batch(pred_boxes * self.params.search_size / resize_factor, resize_factor)

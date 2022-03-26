@@ -110,6 +110,12 @@ vot evaluate --workspace . MixFormerPython
 # generating analysis results
 vot analysis --workspace . --nocache
 ```
+
+## Run MixFormer on your own video
+```
+bash tracking/run_video_demo.sh
+```
+
 ## Compute FLOPs/Params and test speed
 ```
 bash tracking/profile_mixformer.sh
