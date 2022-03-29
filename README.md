@@ -10,6 +10,17 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 
 
 ![MixFormer_Framework](tracking/mixformer_framework.png)
+
+## News
+
+**[Mar 21, 2022]**
+- MixFormer is accepted by **CVPR2022**.
+- We release Code, models and raw results.
+
+**[Mar 29, 2022]**
+- Our paper is selected for an <font color='red'> **oral** </font> presentation.
+
+
 ## Highlights
 ### :sparkles: New transformer tracking framework
 MixFormer is composed of a **target-search mixed attention (MAM) based backbone** and a simple corner head, 
@@ -35,13 +46,6 @@ ToMP101* (CVPR2022)|-|79.2|-|86.4|
 |TrDiMP (CVPR2021)|-|-|67.1|83.3|
 |Siam R-CNN (CVPR2020)|-|72.2|64.9|85.4|
 |TREG (Arxiv2021)|-|74.1|66.8|83.8|
-
-
-## News
-
-**[Mar 21, 2022]**
-- MixFormer is accepted by CVPR2022.
-- We release Code, models and raw results.
 
 ## Install the environment
 Use the Anaconda
