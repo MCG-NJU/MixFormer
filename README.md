@@ -43,6 +43,9 @@ ToMP101* (CVPR2022)|-|79.2|-|86.4|
 - MixFormer is accepted by CVPR2022.
 - We release Code, models and raw results.
 
+**[Mar 29, 2022]**
+- Our paper is selected for an <font color='red'> oral </font> presentation.
+
 ## Install the environment
 Use the Anaconda
 ```
