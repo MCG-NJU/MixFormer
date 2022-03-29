@@ -14,7 +14,7 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 ## News
 
 **[Mar 21, 2022]**
-- MixFormer is accepted by **CVPR2022**.
+- MixFormer is accepted to **CVPR2022**.
 - We release Code, models and raw results.
 
 **[Mar 29, 2022]**
