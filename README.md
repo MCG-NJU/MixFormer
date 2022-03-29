@@ -67,7 +67,7 @@ Put the tracking datasets in ./data. It should look like:
             |-- val
         -- coco
             |-- annotations
-            |-- images
+            |-- train2017
         -- trackingnet
             |-- TRAIN_0
             |-- TRAIN_1
