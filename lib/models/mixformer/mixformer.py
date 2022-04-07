@@ -251,29 +251,18 @@ class Attention(nn.Module):
 
 
         ### Attention!: k/v compression，1/4 of q_size（conv_stride=2）
-        q_t, q_ot, q_s = torch.split(q, [t_h*t_w, t_h*t_w, s_h*s_w], dim=2)
+        q_mt, q_s = torch.split(q, [t_h * t_w * 2, s_h * s_w], dim=2)
         # k_t, k_ot, k_s = torch.split(k, [t_h*t_w//4, t_h*t_w//4, s_h*s_w//4], dim=2)
         # v_t, v_ot, v_s = torch.split(v, [t_h * t_w // 4, t_h * t_w // 4, s_h * s_w // 4], dim=2)
-        k_t, k_ot, k_s = torch.split(k, [((t_h + 1) // 2) ** 2, ((t_h + 1) // 2) ** 2, s_h * s_w // 4], dim=2)
-        v_t, v_ot, v_s = torch.split(v, [((t_h + 1) // 2) ** 2, ((t_h + 1) // 2) ** 2, s_h * s_w // 4], dim=2)
+        k_mt, k_s = torch.split(k, [((t_h + 1) // 2) ** 2 * 2, s_h * s_w // 4], dim=2)
+        v_mt, v_s = torch.split(v, [((t_h + 1) // 2) ** 2 * 2, s_h * s_w // 4], dim=2)
 
         # template attention
-        k1 = torch.cat([k_t, k_ot], dim=2)
-        v1 = torch.cat([v_t, v_ot], dim=2)
-        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_t, k1]) * self.scale
+        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_mt, k_mt]) * self.scale
         attn = F.softmax(attn_score, dim=-1)
         attn = self.attn_drop(attn)
-        x_t = torch.einsum('bhlt,bhtv->bhlv', [attn, v1])
-        x_t = rearrange(x_t, 'b h t d -> b t (h d)')
-
-        # online template attention
-        k2 = torch.cat([k_t, k_ot], dim=2)
-        v2 = torch.cat([v_t, v_ot], dim=2)
-        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_ot, k2]) * self.scale
-        attn = F.softmax(attn_score, dim=-1)
-        attn = self.attn_drop(attn)
-        x_ot = torch.einsum('bhlt,bhtv->bhlv', [attn, v2])
-        x_ot = rearrange(x_ot, 'b h t d -> b t (h d)')
+        x_mt = torch.einsum('bhlt,bhtv->bhlv', [attn, v_mt])
+        x_mt = rearrange(x_mt, 'b h t d -> b t (h d)')
 
         # search region attention
         attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_s, k]) * self.scale
@@ -282,7 +271,7 @@ class Attention(nn.Module):
         x_s = torch.einsum('bhlt,bhtv->bhlv', [attn, v])
         x_s = rearrange(x_s, 'b h t d -> b t (h d)')
 
-        x = torch.cat([x_t, x_ot, x_s], dim=1)
+        x = torch.cat([x_mt, x_s], dim=1)
 
         x = self.proj(x)
         x = self.proj_drop(x)
@@ -348,30 +337,12 @@ class Attention(nn.Module):
         k = rearrange(self.proj_k(k), 'b t (h d) -> b h t d', h=self.num_heads).contiguous()
         v = rearrange(self.proj_v(v), 'b t (h d) -> b h t d', h=self.num_heads).contiguous()
 
-        q_t = q[:, :, :t_h * t_w]
-        q_ot = q[:, :, t_h * t_w:]
-        k_t = k[:, :, :t_h * t_w // 4]
-        k_ot = k[:, :, t_h * t_w // 4:]
-        v_t = v[:, :, :t_h * t_w // 4]
-        v_ot = v[:, :, t_h * t_w // 4:]
-
-        k1 = torch.cat([k_t, k_ot], dim=2)
-        v1 = torch.cat([v_t, v_ot], dim=2)
-        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_t, k1]) * self.scale
+        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q, k]) * self.scale
         attn = F.softmax(attn_score, dim=-1)
         attn = self.attn_drop(attn)
-        x_t = torch.einsum('bhlt,bhtv->bhlv', [attn, v1])
-        self.x_t = rearrange(x_t, 'b h t d -> b t (h d)').contiguous()  # 1, seq, c
+        x = torch.einsum('bhlt,bhtv->bhlv', [attn, v])
 
-        k2 = torch.cat([k_t, k_ot], dim=2)
-        v2 = torch.cat([v_t, v_ot], dim=2)
-        attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_ot, k2]) * self.scale
-        attn = F.softmax(attn_score, dim=-1)
-        attn = self.attn_drop(attn)
-        x_ot = torch.einsum('bhlt,bhtv->bhlv', [attn, v2])
-        self.x_ot = rearrange(x_ot, 'b h t d -> b t (h d)').contiguous()
-
-        x = torch.cat([self.x_t, self.x_ot], dim=1)
+        # x = torch.cat([self.x_t, self.x_ot], dim=1)
 
         x = self.proj(x)
         x = self.proj_drop(x)
