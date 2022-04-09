@@ -835,7 +835,7 @@ class MixFormerOnlineScore(nn.Module):
         if template.dim() == 5:
             template = template.squeeze(0)
         if online_template.dim() == 5:
-            template = online_template.squeeze(0)
+            online_template = online_template.squeeze(0)
         if search.dim() == 5:
             search = search.squeeze(0)
         template, search = self.backbone(template, online_template, search)
