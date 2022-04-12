@@ -371,6 +371,7 @@ class Attention(nn.Module):
         attn = self.attn_drop(attn)
         x = torch.einsum('bhlt,bhtv->bhlv', [attn, v])
         # self.x_ot = rearrange(x, 'b h t d -> b t (h d)').contiguous()
+        x = rearrange(x, 'b h t d -> b t (h d)').contiguous()
 
         # x = torch.cat([self.x_t, self.x_ot], dim=1)
 
