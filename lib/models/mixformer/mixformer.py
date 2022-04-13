@@ -769,7 +769,7 @@ class MixFormer(nn.Module):
         if template.dim() == 5:
             template = template.squeeze(0)
         if online_template.dim() == 5:
-            template = online_template.squeeze(0)
+            online_template = online_template.squeeze(0)
         self.backbone.set_online(template, online_template)
 
     def forward_box_head(self, search):
