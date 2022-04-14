@@ -31,8 +31,8 @@ class MIXFORMER_ALPHA_SEG(object):
 
     def initialize(self, image, mask):
         region = rect_from_mask(mask)
-        init_info = {'init_bbox': region}
-        self.tracker.initialize(image, init_info)
+        # init_info = {'init_bbox': region}
+        # self.tracker.initialize(image, init_info)
 
         self.H, self.W, _ = image.shape
         gt_bbox_np = np.array(region).astype(np.float32)
