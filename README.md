@@ -152,7 +152,6 @@ Cheng Jiang: mg1933027@smail.nju.edu.cn
 * Thanks for [PyTracking](https://github.com/visionml/pytracking) Library and [STARK](https://github.com/researchmm/Stark) Library, which helps us to quickly implement our ideas.
 * We use the implementation of the CvT from the official repo [CvT](https://github.com/leoxiaobin/CvT).  
 
-````
 ## ✏️ Citation
 
 If you think this project is helpful, please feel free to leave a star⭐️ and cite our paper:
