@@ -151,3 +151,25 @@ Cheng Jiang: mg1933027@smail.nju.edu.cn
 ## Acknowledgments
 * Thanks for [PyTracking](https://github.com/visionml/pytracking) Library and [STARK](https://github.com/researchmm/Stark) Library, which helps us to quickly implement our ideas.
 * We use the implementation of the CvT from the official repo [CvT](https://github.com/leoxiaobin/CvT).  
+
+````
+## ✏️ Citation
+
+If you think this project is helpful, please feel free to leave a star⭐️ and cite our paper:
+
+```
+@inproceedings{cui2022mixformer,
+  title={Mixformer: End-to-end tracking with iterative mixed attention},
+  author={Cui, Yutao and Jiang, Cheng and Wang, Limin and Wu, Gangshan},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={13608--13618},
+  year={2022}
+}
+@misc{cui2023mixformer,
+      title={MixFormer: End-to-End Tracking with Iterative Mixed Attention}, 
+      author={Yutao Cui and Cheng Jiang and Gangshan Wu and Limin Wang},
+      year={2023},
+      eprint={2302.02814},
+      archivePrefix={arXiv}
+}
+```
