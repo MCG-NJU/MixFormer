@@ -4,3 +4,5 @@
 *.pyc
 *.pytest_cache
 *.csv
+local.py
+data
