@@ -20,15 +20,19 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 - :fire::fire::fire:  **Code and models for MixViT and MixViT-ConvMAE are available now !** Thank [Tianhui Song](https://github.com/songtianhui) for helping us clean up the code.
 
 **[Feb 8, 2023]**
-
 - Extended version has been available at https://arxiv.org/abs/2302.02814. In particular, the extented **MixViT-L(ConvMAE)** achieves AUC score of 73.3% on LaSOT. Besides, we design a new **TrackMAE** pre-training method for tracking. Code and models will be updated soon.
+
+**[Oct 26, 2022]**
+
+- MixFormerL (solely substituting the CvT backbone with ViT-L backbone without extra tricks) rank  <font color='red'>**1/41 on VOT2022-STb public**</font> dataset. 
+- The <font color='red'>**VOT2022-RGBD and VOT2022-D winners**</font> of MixForRGBD and MixForD, implemented by [Lai Simiao](https://github.com/laisimiao), are constructed upon our MixFormer.
+- The VOT2022-STs winner of MS-AOT employs MixFormer as a part of the tracker.  The VOT2022-STb winner of APMT_MR employs the SPM proposed in MixFormer to select dynamic templates.
 
 **[Mar 29, 2022]**
 
 - Our paper is selected for an <font color='red'> **oral** </font> presentation.
 
 **[Mar 21, 2022]**
-
 - MixFormer is accepted to **CVPR2022**.
 - We release Code, models and raw results.
 
@@ -46,9 +50,10 @@ Mixformer is an end-to-end tracking framework without post-processing.
 ### :sparkles: Strong performance
 | Tracker | VOT2020 (EAO) | LaSOT (NP)| GOT-10K (AO)| TrackingNet (NP)|
 |---|---|---|---|---|
-|**MixViT-L**|**0.584**|**82.2**|**75.7**|**90.3**|
+|**MixViT-L (ConvMAE)**|0.567|**82.8**|-|**90.3**|
+|**MixViT-L**|**0.584**|82.2|**75.7**|90.2|
 |**MixCvT**|0.555|79.9|70.7|88.9|
-ToMP101* (CVPR2022)|-|79.2|-|86.4|
+|ToMP101* (CVPR2022)|-|79.2|-|86.4|
 |SBT-large* (CVPR2022)|0.529|-|70.4|-|
 |SwinTrack* (Arxiv2021)|-|78.6|69.4|88.2|
 |Sim-L/14* (Arxiv2022)|-|79.7|69.8|87.4|
