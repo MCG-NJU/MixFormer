@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data.distributed import DistributedSampler
 # datasets related
-from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet
+from lib.train.dataset import Lasot, Got10k, MSCOCOSeq, ImagenetVID, TrackingNet, TNL2k
 from lib.train.dataset import Lasot_lmdb, Got10k_lmdb, MSCOCOSeq_lmdb, ImagenetVID_lmdb, TrackingNet_lmdb
 from lib.train.data import sampler, opencv_loader, processing, LTRLoader
 import lib.train.data.transforms as tfm
@@ -28,13 +28,15 @@ def names2datasets(name_list: list, settings, image_loader):
     assert isinstance(name_list, list)
     datasets = []
     for name in name_list:
-        assert name in ["LASOT", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET"]
+        assert name in ["LASOT", "GOT10K_vottrain", "GOT10K_votval", "GOT10K_train_full", "COCO17", "VID", "TRACKINGNET", "TNL2k"]
         if name == "LASOT":
             if settings.use_lmdb:
                 print("Building lasot dataset from lmdb")
                 datasets.append(Lasot_lmdb(settings.env.lasot_lmdb_dir, split='train', image_loader=image_loader))
             else:
                 datasets.append(Lasot(settings.env.lasot_dir, split='train', image_loader=image_loader))
+        if name == "TNL2k":
+            datasets.append(TNL2k(settings.env.tnl2k_dir, split='train', image_loader=image_loader))
         if name == "GOT10K_vottrain":
             if settings.use_lmdb:
                 print("Building got10k from lmdb")
@@ -150,7 +152,7 @@ def build_dataloaders(cfg, settings):
 def get_optimizer_scheduler(net, cfg):
     train_score = getattr(cfg.TRAIN, "TRAIN_SCORE", False)
     freeze_stage0 = getattr(cfg.TRAIN, "FREEZE_STAGE0", False)
-    # freeze_stage0 = True
+
     if train_score:
         print("Only training score_branch. Learnable parameters are shown below.")
         param_dicts = [
@@ -163,8 +165,9 @@ def get_optimizer_scheduler(net, cfg):
             else:
                 if is_main_process():
                     print(n)
-    elif freeze_stage0:
-        print("Freeze Stage0 of MixFormer backbone.")
+    elif freeze_stage0: # only for CVT-large backbone
+        assert "cvt_24" == cfg.MODEL.VIT_TYPE
+        print("Freeze Stage0 of MixFormer cvt backbone. Learnable parameters are shown below.")
         param_dicts = [
             {"params": [p for n, p in net.named_parameters() if "backbone" not in n and p.requires_grad]},
             {
@@ -179,12 +182,17 @@ def get_optimizer_scheduler(net, cfg):
             else:
                 if is_main_process():
                     print(n)
-    else:
+    else: # train network except for score prediction module
+        for n, p in net.named_parameters():
+            if "score" in n:
+                p.requires_grad = False
+
         param_dicts = [
             {"params": [p for n, p in net.named_parameters() if "backbone" not in n and p.requires_grad]},
             {
                 "params": [p for n, p in net.named_parameters() if "backbone" in n and p.requires_grad],
                 "lr": cfg.TRAIN.LR * cfg.TRAIN.BACKBONE_MULTIPLIER,
+                "lr_scale": cfg.TRAIN.BACKBONE_MULTIPLIER
             },
         ]
 
@@ -197,8 +205,8 @@ def get_optimizer_scheduler(net, cfg):
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, cfg.TRAIN.LR_DROP_EPOCH)
     elif cfg.TRAIN.SCHEDULER.TYPE == "Mstep":
         lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
-                                                            milestones=cfg.TRAIN.SCHEDULER.MILESTONES,
-                                                            gamma=cfg.TRAIN.SCHEDULER.GAMMA)
+                                                            milestones=cfg.TRAIN.LR_DROP_EPOCH,
+                                                            gamma=cfg.TRAIN.SCHEDULER.DECAY_RATE)
     else:
         raise ValueError("Unsupported scheduler")
     return optimizer, lr_scheduler

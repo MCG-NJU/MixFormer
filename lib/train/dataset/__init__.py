@@ -9,3 +9,4 @@ from .lasot_lmdb import Lasot_lmdb
 from .imagenetvid_lmdb import ImagenetVID_lmdb
 from .coco_seq_lmdb import MSCOCOSeq_lmdb
 from .tracking_net_lmdb import TrackingNet_lmdb
+from .tnl2k import TNL2k

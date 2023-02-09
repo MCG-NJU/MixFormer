@@ -7,11 +7,11 @@ import torch
 import time
 from torch.utils.data.distributed import DistributedSampler
 from torch.cuda.amp import autocast
-from torch.cuda.amp import GradScaler
-
+from lib.train.trainers.misc import NativeScalerWithGradNormCount as NativeScaler
 
 class LTRTrainer(BaseTrainer):
-    def __init__(self, actor, loaders, optimizer, settings, lr_scheduler=None, use_amp=False):
+    def __init__(self, actor, loaders, optimizer, settings, lr_scheduler=None, accum_iter=1,
+                 use_amp=False, shed_args=None):
         """
         args:
             actor - The actor for training the network
@@ -21,7 +21,7 @@ class LTRTrainer(BaseTrainer):
             settings - Training settings
             lr_scheduler - Learning rate scheduler
         """
-        super().__init__(actor, loaders, optimizer, settings, lr_scheduler)
+        super().__init__(actor, loaders, optimizer, settings, lr_scheduler, shed_args)
 
         self._set_default_settings()
 
@@ -38,8 +38,9 @@ class LTRTrainer(BaseTrainer):
         self.move_data_to_gpu = getattr(settings, 'move_data_to_gpu', True)
         self.settings = settings
         self.use_amp = use_amp
+        self.accum_iter = accum_iter
         if use_amp:
-            self.scaler = GradScaler()
+            self.loss_scaler = NativeScaler()
 
     def _set_default_settings(self):
         # Dict of all default values
@@ -59,7 +60,8 @@ class LTRTrainer(BaseTrainer):
 
         self._init_timing()
 
-        for i, data in enumerate(loader, 1):
+        self.optimizer.zero_grad()
+        for data_iter_step, data in enumerate(loader, 1):
             # get inputs
             if self.move_data_to_gpu:
                 data = data.to(self.device)
@@ -73,25 +75,31 @@ class LTRTrainer(BaseTrainer):
                 with autocast():
                     loss, stats = self.actor(data)
 
+            loss /= self.accum_iter
             # backward pass and update weights
             if loader.training:
-                self.optimizer.zero_grad()
+                # self.optimizer.zero_grad()
                 if not self.use_amp:
                     loss.backward()
-                    if self.settings.grad_clip_norm > 0:
-                        torch.nn.utils.clip_grad_norm_(self.actor.net.parameters(), self.settings.grad_clip_norm)
-                    self.optimizer.step()
+                    if (data_iter_step + 1) % self.accum_iter == 0:
+                        if self.settings.grad_clip_norm > 0:
+                            torch.nn.utils.clip_grad_norm_(self.actor.net.parameters(), self.settings.grad_clip_norm)
+                        self.optimizer.step()
                 else:
-                    self.scaler.scale(loss).backward()
-                    self.scaler.step(self.optimizer)
-                    self.scaler.update()
+                    self.loss_scaler(loss, self.optimizer, parameters=self.actor.net.parameters(),
+                                     clip_grad=self.settings.grad_clip_norm,
+                                     update_grad=(data_iter_step + 1) % self.accum_iter == 0)
+
+            if (data_iter_step + 1) % self.accum_iter == 0:
+                self.optimizer.zero_grad()
+            torch.cuda.synchronize()
 
             # update statistics
             batch_size = data['template_images'].shape[loader.stack_dim]
             self._update_stats(stats, batch_size, loader)
 
             # print statistics
-            self._print_stats(i, loader, batch_size)
+            self._print_stats(data_iter_step, loader, batch_size)
 
     def train_epoch(self):
         """Do one epoch for each loader."""
@@ -145,7 +153,7 @@ class LTRTrainer(BaseTrainer):
     def _stats_new_epoch(self):
         # Record learning rate
         for loader in self.loaders:
-            if loader.training:
+            if loader.training and self.lr_scheduler is not None:
                 try:
                     lr_list = self.lr_scheduler.get_lr()
                 except:

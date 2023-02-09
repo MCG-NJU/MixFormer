@@ -55,16 +55,16 @@ class MixFormerActor(BaseActor):
         num_queries = pred_boxes.size(1)
         pred_boxes_vec = box_cxcywh_to_xyxy(pred_boxes).view(-1, 4)  # (B,N,4) --> (BN,4) (x1,y1,x2,y2)
         gt_boxes_vec = box_xywh_to_xyxy(gt_bbox)[:, None, :].repeat((1, num_queries, 1)).view(-1, 4).clamp(min=0.0, max=1.0)  # (B,4) --> (B,1,4) --> (B,N,4)
-        # compute giou and iou
+        # compute ciou and iou
         try:
-            giou_loss, iou = self.objective['giou'](pred_boxes_vec, gt_boxes_vec)  # (BN,4) (BN,4)
+            ciou_loss, iou = self.objective['ciou'](pred_boxes_vec, gt_boxes_vec)  # (BN,4) (BN,4)
         except:
-            giou_loss, iou = torch.tensor(0.0).cuda(), torch.tensor(0.0).cuda()
+            ciou_loss, iou = torch.tensor(0.0).cuda(), torch.tensor(0.0).cuda()
         # compute l1 loss
         l1_loss = self.objective['l1'](pred_boxes_vec, gt_boxes_vec)  # (BN,4) (BN,4)
 
         # weighted sum
-        loss = self.loss_weight['giou'] * giou_loss + self.loss_weight['l1'] * l1_loss
+        loss = self.loss_weight['ciou'] * ciou_loss + self.loss_weight['l1'] * l1_loss
 
         # compute cls loss if neccessary
         if 'pred_scores' in pred_dict:
@@ -84,7 +84,7 @@ class MixFormerActor(BaseActor):
                 #           "IoU": mean_iou.item()}
             else:
                 status = {"Loss/total": loss.item(),
-                          "Loss/giou": giou_loss.item(),
+                          "Loss/ciou": ciou_loss.item(),
                           "Loss/l1": l1_loss.item(),
                           "IoU": mean_iou.item()}
             return loss, status

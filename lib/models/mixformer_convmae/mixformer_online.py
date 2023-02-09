@@ -428,12 +428,11 @@ def get_mixformer_convmae(config, train):
         ckpt = torch.load(ckpt_path, map_location='cpu') #['model']
         new_dict = {}
         for k, v in ckpt.items():
-            if is_main_process():
-                print(k)
             if 'pos_embed' not in k and 'mask_token' not in k:
                 new_dict[k] = v
         missing_keys, unexpected_keys = vit.load_state_dict(new_dict, strict=False)
         if is_main_process():
+            print("Load pretrained backbone checkpoint from:", ckpt_path)
             print("missing keys:", missing_keys)
             print("unexpected keys:", unexpected_keys)
             print("Loading pretrained ViT done.")

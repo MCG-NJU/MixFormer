@@ -751,6 +751,7 @@ def get_mixformer_online_model(config, **kwargs):
             ckpt = torch.load(ckpt_path, map_location='cpu')
             missing_keys, unexpected_keys = msvit.load_state_dict(ckpt, strict=False)
             if is_main_process():
+                print("Load pretrained backbone checkpoint from:", ckpt_path)
                 print("missing keys:", missing_keys)
                 print("unexpected keys:", unexpected_keys)
                 print("Loading pretrained CVT done.")
