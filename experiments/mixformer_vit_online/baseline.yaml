@@ -8,7 +8,7 @@ DATA:
   - 0.406
   SEARCH:
     CENTER_JITTER: 4.5
-    FACTOR: 5.0
+    FACTOR: 4.5
     SCALE_JITTER: 0.5
     SIZE: 288
   STD:

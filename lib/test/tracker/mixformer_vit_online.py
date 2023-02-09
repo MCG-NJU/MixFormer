@@ -7,7 +7,6 @@ import os
 from lib.models.mixformer_vit import build_mixformer_vit_online_score
 from lib.test.tracker.tracker_utils import Preprocessor_wo_mask
 from lib.utils.box_ops import clip_box
-from lib.test.tracker.tracker_utils import vis_attn_maps
 
 
 class MixFormerOnline(BaseTracker):
@@ -32,7 +31,6 @@ class MixFormerOnline(BaseTracker):
                 os.makedirs(self.save_dir)
         # for save boxes from all queries
         self.save_all_boxes = params.save_all_boxes
-        # self.z_dict1 = {}
 
         # Set the update interval
         DATASET_NAME = dataset_name.upper()
@@ -64,9 +62,6 @@ class MixFormerOnline(BaseTracker):
         # forward the template once
         z_patch_arr, _, z_amask_arr = sample_target(image, info['init_bbox'], self.params.template_factor,
                                                     output_sz=self.params.template_size)
-        if self.params.vis_attn==1:
-            self.z_patch = z_patch_arr
-            self.oz_patch = z_patch_arr
         template = self.preprocessor.process(z_patch_arr)
         self.template = template
         self.online_template = template
@@ -97,41 +92,7 @@ class MixFormerOnline(BaseTracker):
         search = self.preprocessor.process(x_patch_arr)
         with torch.no_grad():
             if self.online_size==1:
-                # for visualize attention maps
-                if self.params.vis_attn==1 and self.frame_id % 200 == 0:
-                    attn_weights = []
-                    hooks = []
-                    for i in range(len(self.network.backbone.blocks)):
-                        hooks.append(self.network.backbone.blocks[i].attn.attn_drop.register_forward_hook(
-                            lambda self, input, output: attn_weights.append(output)))
                 out_dict, _ = self.network(self.template, self.online_template, search, run_score_head=True)
-                if self.params.vis_attn==1 and self.frame_id % 200 == 0:
-                    for hook in hooks:
-                        hook.remove()
-                    # attn0(t_ot) / 1(t_ot) / 2(t_ot_s)
-                    # shape: torch.Size([1, 6, 64, 32]), torch.Size([1, 6, 64, 32]), torch.Size([1, 6, 400, 132])
-                    # shape: torch.Size([1, H, 64*2, 64*2]), torch.Size([1, H, 324, 64+64+324])
-                    # vis attn weights: online_template-to-template
-                    vis_attn_maps(attn_weights[::2], q_w=8, k_w=8, skip_len=64, skip_len0=0, x1=self.oz_patch, x2=self.z_patch,
-                                  x1_title='Online Template', x2_title='Template',
-                                  save_path= 'vis_attn_weights/t2ot_vis/%04d' % self.frame_id)
-                    # vis attn weights: template-to-online_template
-                    vis_attn_maps(attn_weights[::2], q_w=8, k_w=8, skip_len=0, skip_len0=64, x1=self.z_patch, x2=self.oz_patch,
-                                  x1_title='Template', x2_title='Online Template',
-                                  save_path='vis_attn_weights/ot2t_vis/%04d' % self.frame_id)
-                    # vis attn weights: template-to-search
-                    vis_attn_maps(attn_weights[1::2], q_w=18, k_w=8, skip_len=0, x1=self.z_patch, x2=x_patch_arr,
-                                  x1_title='Template', x2_title='Search',
-                                  save_path='vis_attn_weights/s2t_vis/%04d' % self.frame_id)
-                    # vis attn weights: online_template-to-search
-                    vis_attn_maps(attn_weights[1::2], q_w=18, k_w=8, skip_len=64, x1=self.oz_patch, x2=x_patch_arr,
-                                  x1_title='Online Template', x2_title='Search',
-                                  save_path='vis_attn_weights/s2ot_vis/%04d' % self.frame_id)
-                    # vis attn weights: search-to-search
-                    vis_attn_maps(attn_weights[1::2], q_w=18, k_w=18, skip_len=128, x1=x_patch_arr, x2=x_patch_arr,
-                                  x1_title='Search1', x2_title='Search2', idxs=[(144, 144)],
-                                  save_path='vis_attn_weights/s2s_vis/%04d' % self.frame_id)
-                    print("save vis_attn of frame-{} done.".format(self.frame_id))
             else:
                 out_dict, _ = self.network.forward_test(search, run_score_head=True)
 
@@ -149,14 +110,10 @@ class MixFormerOnline(BaseTracker):
                                                         self.params.template_factor,
                                                         output_sz=self.params.template_size)  # (x1, y1, w, h)
             self.online_max_template = self.preprocessor.process(z_patch_arr)
-            if self.params.vis_attn == 1:
-                self.oz_patch_max = z_patch_arr
             self.max_pred_score = pred_score
         if self.frame_id % self.update_interval == 0:
             if self.online_size == 1:
                 self.online_template = self.online_max_template
-                if self.params.vis_attn == 1:
-                    self.oz_patch = self.oz_patch_max
             elif self.online_template.shape[0] < self.online_size:
                 self.online_template = torch.cat([self.online_template, self.online_max_template])
             else:

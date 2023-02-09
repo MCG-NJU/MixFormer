@@ -28,7 +28,6 @@ class MixFormer(BaseTracker):
                 os.makedirs(self.save_dir)
         # for save boxes from all queries
         self.save_all_boxes = params.save_all_boxes
-        # self.z_dict1 = {}
 
         # Set the update interval
         DATASET_NAME = dataset_name.upper()
@@ -46,9 +45,6 @@ class MixFormer(BaseTracker):
         self.template = template
 
         self.online_template = template
-        # print("template shape: {}".format(template.shape))
-        # with torch.no_grad():
-        #     self.z_dict1 = self.network.forward_backbone(template)
         # save states
         self.state = info['init_bbox']
         self.frame_id = 0
@@ -64,16 +60,8 @@ class MixFormer(BaseTracker):
         x_patch_arr, resize_factor, x_amask_arr = sample_target(image, self.state, self.params.search_factor,
                                                                 output_sz=self.params.search_size)  # (x1, y1, w, h)
         search = self.preprocessor.process(x_patch_arr)
-        # print("search shape: {}".format(search.shape))
         with torch.no_grad():
-            # x_dict = self.network.forward_backbone(search)
-            # # merge the template and the search
-            # feat_dict_list = [self.z_dict1, x_dict]
-            # seq_dict = merge_template_search(feat_dict_list)
-            # # run the transformer
-            # out_dict, _, _ = self.network.forward_transformer(seq_dict=seq_dict, run_box_head=True)
             out_dict, _ = self.network(self.template, self.online_template, search)
-            # print("out_dict: {}".format(out_dict))
 
         pred_boxes = out_dict['pred_boxes'].view(-1, 4)
         # Baseline: Take the mean of all pred boxes as the final result
@@ -87,7 +75,6 @@ class MixFormer(BaseTracker):
                 z_patch_arr, _, z_amask_arr = sample_target(image, self.state, self.params.template_factor,
                                                             output_sz=self.params.template_size)  # (x1, y1, w, h)
                 self.online_template = self.preprocessor.process(z_patch_arr)
-
 
         # for debug
         if self.debug:

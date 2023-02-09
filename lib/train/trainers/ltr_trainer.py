@@ -40,6 +40,7 @@ class LTRTrainer(BaseTrainer):
         self.use_amp = use_amp
         self.accum_iter = accum_iter
         if use_amp:
+            print("Using amp")
             self.loss_scaler = NativeScaler()
 
     def _set_default_settings(self):
