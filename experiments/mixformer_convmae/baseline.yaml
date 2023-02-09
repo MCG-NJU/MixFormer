@@ -21,10 +21,16 @@ DATA:
     NUMBER: 2
   TRAIN:
     DATASETS_NAME:
-    - GOT10K_train_full
+    - GOT10K_vottrain
+    - LASOT
+    - COCO17
+    - TRACKINGNET
     DATASETS_RATIO:
     - 1
-    SAMPLE_PER_EPOCH: 15000
+    - 1
+    - 1
+    - 1
+    SAMPLE_PER_EPOCH: 60000
   VAL:
     DATASETS_NAME:
     - GOT10K_votval
@@ -32,10 +38,10 @@ DATA:
     - 1
     SAMPLE_PER_EPOCH: 10000
 MODEL:
-  VIT_TYPE: base_patch16
+  VIT_TYPE: convmae_base
   BACKBONE:
     PRETRAINED: True
-    PRETRAINED_PATH: '/YOUR/PRETRAINED/VIT/DIR/mae_pretrain_vit_base.pth'
+    PRETRAINED_PATH: '/YOUR/PRETRAINED/VIT/DIR/convmae_base.pth'
   HEAD_TYPE: CORNER_UP
   HIDDEN_DIM: 768 #768
   PREDICT_MASK: false
@@ -64,4 +70,8 @@ TEST:
   TEMPLATE_FACTOR: 2.0
   TEMPLATE_SIZE: 128
   UPDATE_INTERVALS:
+    LASOT: [200]
     GOT10K_TEST: [200]
+    TRACKINGNET: [25]
+    VOT20: [10]
+    VOT20LT: [200]

@@ -25,7 +25,12 @@ args = parser.parse_args()
 
 dataset_name = args.dataset_name
 
-trackers.extend(trackerlist(name='mixformer_online', parameter_name=args.tracker_param, dataset_name=args.dataset_name,
+"""MixFormer"""
+# trackers.extend(trackerlist(name='mixformer_online', parameter_name=args.tracker_param, dataset_name=args.dataset_name,
+#                             run_ids=None, display_name='MixFormerOnline'))
+# trackers.extend(trackerlist(name='mixformer_vit_online', parameter_name=args.tracker_param, dataset_name=args.dataset_name,
+#                             run_ids=None, display_name='MixFormerOnline'))
+trackers.extend(trackerlist(name='mixformer_convmae_online', parameter_name=args.tracker_param, dataset_name=args.dataset_name,
                             run_ids=None, display_name='MixFormerOnline'))
 """TransT"""
 # trackers.extend(trackerlist(name='TransT_N2', parameter_name=None, dataset_name=None,

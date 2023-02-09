@@ -32,10 +32,10 @@ DATA:
     - 1
     SAMPLE_PER_EPOCH: 10000
 MODEL:
-  VIT_TYPE: base_patch16
+  VIT_TYPE: convmae_base
   BACKBONE:
     PRETRAINED: True
-    PRETRAINED_PATH: '/YOUR/PRETRAINED/VIT/DIR/mae_pretrain_vit_base.pth'
+    PRETRAINED_PATH: '/YOUR/PRETRAINED/VIT/DIR/convmae_base.pth'
   HEAD_TYPE: CORNER_UP
   HIDDEN_DIM: 768 #768
   PREDICT_MASK: false
