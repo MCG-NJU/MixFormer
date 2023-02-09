@@ -15,7 +15,7 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 
 ## News
 
-**[Feb 08, 2022]**
+**[Feb 08, 2023]**
 
 - Extended version has been available at https://arxiv.org/abs/2302.02814. In particular, the extented **MixViT-L(ConvMAE)** achieves AUC score of 73.3% on LaSOT. Besides, we design a new **TrackMAE** pre-training method for tracking. Code and models will be updated soon.
 
