@@ -13,9 +13,15 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 
 ![MixFormer_Framework](tracking/mixformer_framework.png)
 
+### :fire::fire: We released code and models for MixViT and MixViT-ConvMAE !
+
 ## News
 
-**[Feb 08, 2023]**
+**[Feb 10, 2023]**
+
+- Code and models for MixViT and MixViT-ConvMAE are available. Thanks to [Tianhui Song](https://github.com/songtianhui) for helping us clean up the 'dirty' code.
+
+**[Feb 8, 2023]**
 
 - Extended version has been available at https://arxiv.org/abs/2302.02814. In particular, the extented **MixViT-L(ConvMAE)** achieves AUC score of 73.3% on LaSOT. Besides, we design a new **TrackMAE** pre-training method for tracking. Code and models will be updated soon.
 
@@ -35,15 +41,15 @@ MixFormer is composed of a **target-search mixed attention (MAM) based backbone*
 yielding a compact tracking pipeline without an explicit integration module.
 
 
-### :sparkles: End-to-end, Positional-embedding-free, multi-feature-aggregation-free
+### :sparkles: End-to-end, post-processing-free
 
-Mixformer is an end-to-end tracking framework without post-processing. Compared with other transformer trackers, MixFormer
-doesn's use positional embedding, attentional mask and multi-layer feature aggregation strategy.
+Mixformer is an end-to-end tracking framework without post-processing. 
 
 ### :sparkles: Strong performance
 | Tracker | VOT2020 (EAO) | LaSOT (NP)| GOT-10K (AO)| TrackingNet (NP)|
 |---|---|---|---|---|
-|**MixFormer**|**0.555**|**79.9**|**70.7**|**88.9**|
+|**MixViT-L**|**0.584**|**82.2**|**75.7**|**90.3**|
+|**MixCvT**|0.555|79.9|70.7|88.9|
 ToMP101* (CVPR2022)|-|79.2|-|86.4|
 |SBT-large* (CVPR2022)|0.529|-|70.4|-|
 |SwinTrack* (Arxiv2021)|-|78.6|69.4|88.2|
@@ -153,8 +159,6 @@ The trained models and the raw tracking results are provided in the [[Models and
 
 ## Contact
 Yutao Cui: cuiyutao@smail.nju.edu.cn 
-
-Cheng Jiang: mg1933027@smail.nju.edu.cn
 
 ## Acknowledgments
 * Thanks for [PyTracking](https://github.com/visionml/pytracking) Library and [STARK](https://github.com/researchmm/Stark) Library, which helps us to quickly implement our ideas.
