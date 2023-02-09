@@ -44,6 +44,7 @@ def main():
                        args.config_prv, args.distill, args.script_teacher, args.config_teacher, args.stage1_model)
     else:
         raise ValueError("mode should be 'single' or 'multiple'.")
+    print(train_cmd)
     os.system(train_cmd)
 
 

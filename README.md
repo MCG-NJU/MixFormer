@@ -100,18 +100,26 @@ lib/test/evaluation/local.py  # paths about testing
 
 ## Train MixFormer
 Training with multiple GPUs using DDP. More details of 
-other training settings can be found at ```tracking/train_mixformer.sh```
+other training settings can be found at ```tracking/train_mixformer_[cvt/vit/convmae].sh``` for different backbone respectively.
 ```
-# MixFormer
-bash tracking/train_mixformer.sh
+# MixFormer with CVT backbone
+bash tracking/train_mixformer_cvt.sh
+
+# MixFormer with ViT backbone
+bash tracking/train_mixformer_vit.sh
+
+# MixFormer with ConvMAE backbone
+bash tracking/train_mixformer_convmae.sh
 ```
 
 ## Test and evaluate MixFormer on benchmarks
 
 - LaSOT/GOT10k-test/TrackingNet/OTB100/UAV123. More details of 
-test settings can be found at ```tracking/test_mixformer.sh```
+test settings can be found at ```tracking/test_mixformer_[cvt/vit/convmae].sh```
 ```
-bash tracking/test_mixformer.sh
+bash tracking/test_mixformer_cvt.sh
+bash tracking/test_mixformer_vit.sh
+bash tracking/test_mixformer_convmae.sh
 ```
 
 - VOT2020  

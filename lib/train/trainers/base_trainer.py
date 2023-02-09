@@ -4,13 +4,14 @@ import torch
 import traceback
 from lib.train.admin import multigpu
 from torch.utils.data.distributed import DistributedSampler
+from lib.utils.lr_shed import adjust_learning_rate
 
 
 class BaseTrainer:
     """Base trainer class. Contains functions for training and saving/loading checkpoints.
     Trainer classes should inherit from this one and overload the train_epoch function."""
 
-    def __init__(self, actor, loaders, optimizer, settings, lr_scheduler=None):
+    def __init__(self, actor, loaders, optimizer, settings, lr_scheduler=None, shed_args=None):
         """
         args:
             actor - The actor for training the network
@@ -19,11 +20,13 @@ class BaseTrainer:
             optimizer - The optimizer used for training, e.g. Adam
             settings - Training settings
             lr_scheduler - Learning rate scheduler
+            shed_args - Args for mae-style learning rate adjustment, if specified lr_scheduler should be None.
         """
         self.actor = actor
         self.optimizer = optimizer
         self.lr_scheduler = lr_scheduler
         self.loaders = loaders
+        self.shed_args = shed_args
 
         self.update_settings(settings)
 
@@ -89,6 +92,9 @@ class BaseTrainer:
                             self.lr_scheduler.step()
                         else:
                             self.lr_scheduler.step(epoch - 1)
+                    else: # warmup and cosine decay
+                        assert self.shed_args is not None
+                        adjust_learning_rate(self.optimizer, self.epoch, self.shed_args)
                     # only save the last 10 checkpoints
                     save_every_epoch = getattr(self.settings, "save_every_epoch", False)
                     if epoch > (max_epochs - 10) or save_every_epoch or epoch % 5 == 0:
