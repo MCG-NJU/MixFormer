@@ -17,7 +17,7 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 
 **[Feb 10, 2023]** 
 
-- :fire::fire::fire:  **Code and models for MixViT and MixViT-ConvMAE are available now !** Thanks to [Tianhui Song](https://github.com/songtianhui) for helping us clean up the code.
+- :fire::fire::fire:  **Code and models for MixViT and MixViT-ConvMAE are available now !** Thank [Tianhui Song](https://github.com/songtianhui) for helping us clean up the code.
 
 **[Feb 8, 2023]**
 
