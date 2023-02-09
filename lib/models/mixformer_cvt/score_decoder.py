@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
-from lib.models.mixformer.head import MLP
+from lib.models.mixformer_cvt.head import MLP
 from external.PreciseRoIPooling.pytorch.prroi_pool import PrRoIPool2D
 from timm.models.layers import trunc_normal_
 

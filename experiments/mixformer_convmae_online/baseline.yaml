@@ -82,11 +82,12 @@ TEST:
     GOT10K_TEST: [200]
     TRACKINGNET: [25]
     OTB: [6]
+    UAV: [18]
     VOT20: [6]
     VOT20LT: [200]
   ONLINE_SIZES:
     LASOT: [2]
-    UAV: [3]
+    UAV: [2]
     OTB: [2]
     GOT10K_TEST: [2]
     TRACKINGNET: [3]

@@ -4,8 +4,7 @@ from lib.train.data.processing_utils import sample_target
 # for debug
 import cv2
 import os
-from lib.utils.merge import merge_template_search
-from lib.models.mixformer import build_mixformer
+from lib.models.mixformer_cvt import build_mixformer_cvt
 from lib.test.tracker.tracker_utils import Preprocessor_wo_mask
 from lib.utils.box_ops import clip_box
 
@@ -13,7 +12,7 @@ from lib.utils.box_ops import clip_box
 class MixFormer(BaseTracker):
     def __init__(self, params, dataset_name):
         super(MixFormer, self).__init__(params)
-        network = build_mixformer(params.cfg)
+        network = build_mixformer_cvt(params.cfg)
         network.load_state_dict(torch.load(self.params.checkpoint, map_location='cpu')['net'], strict=True)
         self.cfg = params.cfg
         self.network = network.cuda()

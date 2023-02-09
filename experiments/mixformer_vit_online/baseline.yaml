@@ -82,6 +82,7 @@ TEST:
     GOT10K_TEST: [200]
     TRACKINGNET: [25]
     OTB: [6]
+    UAV: [20]
     VOT20: [6]
     VOT20LT: [200]
   ONLINE_SIZES:

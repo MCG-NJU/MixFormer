@@ -1,33 +1,17 @@
-import math
 from functools import partial
-import warnings
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from einops import rearrange
 from timm.models.layers import DropPath, Mlp, trunc_normal_
 
 from lib.utils.misc import is_main_process
-from lib.models.mixformer.head import build_box_head
+from lib.models.mixformer_cvt.head import build_box_head
+from lib.models.mixformer_cvt.utils import to_2tuple
 from lib.utils.box_ops import box_xyxy_to_cxcywh, box_cxcywh_to_xyxy
 from lib.models.mixformer_vit.pos_utils import get_2d_sincos_pos_embed
-
-from einops import rearrange
-from itertools import repeat
-import collections.abc
-from lib.models.mixformer_vit.score_decoder import ScoreDecoder
-
-
-# From PyTorch internals
-def _ntuple(n):
-    def parse(x):
-        if isinstance(x, collections.abc.Iterable):
-            return x
-        return tuple(repeat(x, n))
-    return parse
-
-to_2tuple = _ntuple(2)
+from lib.models.mixformer_cvt.score_decoder import ScoreDecoder
 
 
 class CMlp(nn.Module):
@@ -521,7 +505,6 @@ class MixFormerOnlineScore(nn.Module):
 
 def build_mixformer_convmae_online_score(cfg, settings=None, train=True) -> MixFormerOnlineScore:
     backbone = get_mixformer_convmae(cfg, train)  # backbone without positional encoding and attention mask
-    # score_branch = ScoreDecoder(pool_size=4)
     score_branch = ScoreDecoder(pool_size=4, hidden_dim=cfg.MODEL.HIDDEN_DIM, num_heads=cfg.MODEL.HIDDEN_DIM//64)  # the proposed score prediction module (SPM)
     box_head = build_box_head(cfg)  # a simple corner head
     model = MixFormerOnlineScore(

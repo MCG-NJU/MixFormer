@@ -4,7 +4,7 @@ from lib.train.data.processing_utils import sample_target
 # for debug
 import cv2
 import os
-from lib.models.mixformer import build_mixformer_online_score
+from lib.models.mixformer_cvt import build_mixformer_cvt_online_score
 from lib.test.tracker.tracker_utils import Preprocessor_wo_mask
 from lib.utils.box_ops import clip_box
 from lib.test.tracker.tracker_utils import vis_attn_maps
@@ -13,7 +13,7 @@ from lib.test.tracker.tracker_utils import vis_attn_maps
 class MixFormerOnline(BaseTracker):
     def __init__(self, params, dataset_name):
         super(MixFormerOnline, self).__init__(params)
-        network = build_mixformer_online_score(params.cfg,  train=False)
+        network = build_mixformer_cvt_online_score(params.cfg,  train=False)
         network.load_state_dict(torch.load(self.params.checkpoint, map_location='cpu')['net'], strict=True)
         self.cfg = params.cfg
         self.network = network.cuda()

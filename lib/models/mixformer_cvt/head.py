@@ -1,8 +1,7 @@
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
-from lib.models.mixformer.utils import FrozenBatchNorm2d
-# import time
+from lib.models.mixformer_cvt.utils import FrozenBatchNorm2d
 
 
 def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1,
@@ -96,11 +95,11 @@ class Corner_Predictor(nn.Module):
 
 
 
-class Corner_Predictor_V3(nn.Module):
+class Pyramid_Corner_Predictor(nn.Module):
     """ Corner Predictor module"""
 
     def __init__(self, inplanes=64, channel=256, feat_sz=20, stride=16, freeze_bn=False):
-        super(Corner_Predictor_V3, self).__init__()
+        super(Pyramid_Corner_Predictor, self).__init__()
         self.feat_sz = feat_sz
         self.stride = stride
         self.img_sz = self.feat_sz * self.stride
@@ -250,8 +249,8 @@ def build_box_head(cfg):
         elif cfg.MODEL.HEAD_TYPE == "CORNER_UP":
             stride = 4
             feat_sz = int(cfg.DATA.SEARCH.SIZE / stride)
-            corner_head = Corner_Predictor_V3(inplanes=cfg.MODEL.HIDDEN_DIM, channel=channel,
-                                              feat_sz=feat_sz, stride=stride, freeze_bn=freeze_bn)
+            corner_head = Pyramid_Corner_Predictor(inplanes=cfg.MODEL.HIDDEN_DIM, channel=channel,
+                                                   feat_sz=feat_sz, stride=stride, freeze_bn=freeze_bn)
         else:
             raise ValueError()
         return corner_head

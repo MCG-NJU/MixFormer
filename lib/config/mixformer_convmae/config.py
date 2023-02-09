@@ -8,7 +8,7 @@ cfg = edict()
 
 # MODEL
 cfg.MODEL = edict()
-cfg.MODEL.VIT_TYPE = 'convmae'
+cfg.MODEL.VIT_TYPE = 'convmae_base'
 cfg.MODEL.HEAD_TYPE = "CORNER"
 cfg.MODEL.HIDDEN_DIM = 768
 cfg.MODEL.NUM_OBJECT_QUERIES = 1

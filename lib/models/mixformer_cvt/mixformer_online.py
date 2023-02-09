@@ -1,43 +1,19 @@
 from functools import partial
-from itertools import repeat
-from torch._six import container_abcs
-
 import logging
-import os
 from collections import OrderedDict
-
-import numpy as np
-import scipy
-import torch.nn.functional as F
-from einops import rearrange
-from einops.layers.torch import Rearrange
-
-from timm.models.layers import DropPath, trunc_normal_
-from .utils import FrozenBatchNorm2d
 
 import torch
 from torch import nn
+import torch.nn.functional as F
+from einops import rearrange
+from einops.layers.torch import Rearrange
+from timm.models.layers import DropPath, trunc_normal_
 
-from .head import build_box_head
-from lib.utils.box_ops import box_xyxy_to_cxcywh
+from .utils import FrozenBatchNorm2d, to_2tuple
+from .head import build_box_head, MLP
 from lib.utils.misc import is_main_process
-
-
-# From PyTorch internals
-def _ntuple(n):
-    def parse(x):
-        if isinstance(x, container_abcs.Iterable):
-            return x
-        return tuple(repeat(x, n))
-
-    return parse
-
-
-to_1tuple = _ntuple(1)
-to_2tuple = _ntuple(2)
-to_3tuple = _ntuple(3)
-to_4tuple = _ntuple(4)
-to_ntuple = _ntuple
+from lib.utils.box_ops import box_xyxy_to_cxcywh, box_cxcywh_to_xyxy
+from lib.models.mixformer_cvt.score_decoder import ScoreDecoder
 
 
 class LayerNorm(nn.LayerNorm):
@@ -251,6 +227,12 @@ class Attention(nn.Module):
 
 
         ### Attention!: k/v compression，1/4 of q_size（conv_stride=2）
+        # q_t, q_ot, q_s = torch.split(q, [t_h*t_w, t_h*t_w, s_h*s_w], dim=2)
+        # # k_t, k_ot, k_s = torch.split(k, [t_h*t_w//4, t_h*t_w//4, s_h*s_w//4], dim=2)
+        # # v_t, v_ot, v_s = torch.split(v, [t_h * t_w // 4, t_h * t_w // 4, s_h * s_w // 4], dim=2)
+        # k_t, k_ot, k_s = torch.split(k, [((t_h + 1) // 2) ** 2, ((t_h + 1) // 2) ** 2, s_h * s_w // 4], dim=2)
+        # v_t, v_ot, v_s = torch.split(v, [((t_h + 1) // 2) ** 2, ((t_h + 1) // 2) ** 2, s_h * s_w // 4], dim=2)
+
         q_mt, q_s = torch.split(q, [t_h * t_w * 2, s_h * s_w], dim=2)
         # k_t, k_ot, k_s = torch.split(k, [t_h*t_w//4, t_h*t_w//4, s_h*s_w//4], dim=2)
         # v_t, v_ot, v_s = torch.split(v, [t_h * t_w // 4, t_h * t_w // 4, s_h * s_w // 4], dim=2)
@@ -264,6 +246,15 @@ class Attention(nn.Module):
         x_mt = torch.einsum('bhlt,bhtv->bhlv', [attn, v_mt])
         x_mt = rearrange(x_mt, 'b h t d -> b t (h d)')
 
+        # online template attention
+        # k2 = torch.cat([k_t, k_ot], dim=2)
+        # v2 = torch.cat([v_t, v_ot], dim=2)
+        # attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_ot, k2]) * self.scale
+        # attn = F.softmax(attn_score, dim=-1)
+        # attn = self.attn_drop(attn)
+        # x_ot = torch.einsum('bhlt,bhtv->bhlv', [attn, v2])
+        # x_ot = rearrange(x_ot, 'b h t d -> b t (h d)')
+
         # search region attention
         attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_s, k]) * self.scale
         attn = F.softmax(attn_score, dim=-1)
@@ -271,6 +262,7 @@ class Attention(nn.Module):
         x_s = torch.einsum('bhlt,bhtv->bhlv', [attn, v])
         x_s = rearrange(x_s, 'b h t d -> b t (h d)')
 
+        # x = torch.cat([x_t, x_ot, x_s], dim=1)
         x = torch.cat([x_mt, x_s], dim=1)
 
         x = self.proj(x)
@@ -302,7 +294,6 @@ class Attention(nn.Module):
         x = self.proj_drop(x)
 
         return x
-
 
     def set_online(self, x, t_h, t_w):
         template = x[:, :t_h * t_w]  # 1, 1024, c
@@ -337,10 +328,28 @@ class Attention(nn.Module):
         k = rearrange(self.proj_k(k), 'b t (h d) -> b h t d', h=self.num_heads).contiguous()
         v = rearrange(self.proj_v(v), 'b t (h d) -> b h t d', h=self.num_heads).contiguous()
 
+        # q_t = q[:, :, :t_h * t_w]
+        # q_ot = q[:, :, t_h * t_w:]
+        # k_t = k[:, :, :t_h * t_w // 4]
+        # k_ot = k[:, :, t_h * t_w // 4:]
+        # v_t = v[:, :, :t_h * t_w // 4]
+        # v_ot = v[:, :, t_h * t_w // 4:]
+        #
+        # k1 = torch.cat([k_t, k_ot], dim=2)
+        # v1 = torch.cat([v_t, v_ot], dim=2)
+        # attn_score = torch.einsum('bhlk,bhtk->bhlt', [q_t, k1]) * self.scale
+        # attn = F.softmax(attn_score, dim=-1)
+        # attn = self.attn_drop(attn)
+        # x_t = torch.einsum('bhlt,bhtv->bhlv', [attn, v1])
+        # self.x_t = rearrange(x_t, 'b h t d -> b t (h d)').contiguous()  # 1, seq, c
+
+        # k2 = torch.cat([k_t, k_ot], dim=2)
+        # v2 = torch.cat([v_t, v_ot], dim=2)
         attn_score = torch.einsum('bhlk,bhtk->bhlt', [q, k]) * self.scale
         attn = F.softmax(attn_score, dim=-1)
         attn = self.attn_drop(attn)
         x = torch.einsum('bhlt,bhtv->bhlv', [attn, v])
+        # self.x_ot = rearrange(x, 'b h t d -> b t (h d)').contiguous()
         x = rearrange(x, 'b h t d -> b t (h d)').contiguous()
 
         # x = torch.cat([self.x_t, self.x_ot], dim=1)
@@ -390,7 +399,6 @@ class Block(nn.Module):
 
     def forward(self, x, t_h, t_w, s_h, s_w):
         res = x
-
         x = self.norm1(x)
         attn = self.attn(x, t_h, t_w, s_h, s_w)
         x = res + self.drop_path(attn)
@@ -583,14 +591,11 @@ class VisionTransformer(nn.Module):
         return template, online_template, search
 
     def forward_test(self, search):
-        # x = self.patch_embed(x)
-        # B, C, H, W = x.size()
         search = self.patch_embed(search)
         s_B, s_C, s_H, s_W = search.size()
 
         search = rearrange(search, 'b c h w -> b (h w) c').contiguous()
         x = search
-        # x = torch.cat([template, search], dim=1)
 
         x = self.pos_drop(x)
 
@@ -615,7 +620,6 @@ class VisionTransformer(nn.Module):
         online_template = rearrange(online_template, 'b c h w -> (b h w) c').unsqueeze(0).contiguous()
         # 1, 1024, c
         # 1, b*1024, c
-        # print(template.shape, online_template.shape)
         x = torch.cat([template, online_template], dim=1)
 
         x = self.pos_drop(x)
@@ -702,14 +706,15 @@ class ConvolutionalVisionTransformer(nn.Module):
     def forward_test(self, search):
         for i in range(self.num_stages):
             search = getattr(self, f'stage{i}').forward_test(search)
-        return search
+        return self.template, search
 
     def set_online(self, template, online_template):
         for i in range(self.num_stages):
             template, online_template = getattr(self, f'stage{i}').set_online(template, online_template)
+        self.template = template
 
 
-def get_mixformer_model(config, **kwargs):
+def get_mixformer_online_model(config, **kwargs):
     msvit_spec = config.MODEL.BACKBONE
     msvit = ConvolutionalVisionTransformer(
         in_chans=3,
@@ -735,17 +740,18 @@ def get_mixformer_model(config, **kwargs):
     return msvit
 
 
-class MixFormer(nn.Module):
-    """ This is the base class for Transformer Tracking, whcih jointly perform feature extraction and interaction. """
-    def __init__(self, backbone, box_head, head_type="CORNER"):
+class MixFormerOnlineScore(nn.Module):
+    """ Mixformer tracking with score prediction module, whcih jointly perform feature extraction and interaction. """
+    def __init__(self, backbone, box_head, score_branch=None, head_type="CORNER"):
         """ Initializes the model.
         """
         super().__init__()
         self.backbone = backbone
         self.box_head = box_head
+        self.score_branch = score_branch
         self.head_type = head_type
 
-    def forward(self, template, online_template, search, run_score_head=False, gt_bboxes=None):
+    def forward(self, template, online_template, search, run_score_head=True, gt_bboxes=None):
         # search: (b, c, h, w)
         if template.dim() == 5:
             template = template.squeeze(0)
@@ -754,17 +760,22 @@ class MixFormer(nn.Module):
         if search.dim() == 5:
             search = search.squeeze(0)
         template, search = self.backbone(template, online_template, search)
-        # Forward the corner head
-        return self.forward_box_head(search)
+        # search shape: (b, 384, 20, 20)
+        # Forward the corner head and score head
+        out, outputs_coord_new = self.forward_head(search, template, run_score_head, gt_bboxes)
 
-    def forward_test(self, search, run_box_head=True, run_cls_head=False):
-        # search: (b, c, h, w) h=20
+        return out, outputs_coord_new
+
+    def forward_test(self, search, run_score_head=True, gt_bboxes=None):
+        # search: (b, c, h, w)
         if search.dim() == 5:
             search = search.squeeze(0)
-        search = self.backbone.forward_test(search)
+        template, search = self.backbone.forward_test(search)
         # search (b, 384, 20, 20)
-        # Forward the corner head
-        return self.forward_box_head(search)
+        # Forward the corner head and score head
+        out, outputs_coord_new = self.forward_head(search, template, run_score_head, gt_bboxes)
+
+        return out, outputs_coord_new
 
     def set_online(self, template, online_template):
         if template.dim() == 5:
@@ -772,6 +783,25 @@ class MixFormer(nn.Module):
         if online_template.dim() == 5:
             online_template = online_template.squeeze(0)
         self.backbone.set_online(template, online_template)
+
+
+    def forward_head(self, search, template, run_score_head=True, gt_bboxes=None):
+        """
+        :param search: (b, c, h, w), reg_mask: (b, h, w)
+        :return:
+        """
+        out_dict = {}
+        out_dict_box, outputs_coord = self.forward_box_head(search)
+        out_dict.update(out_dict_box)
+        if run_score_head:
+            # forward the classification head
+            if gt_bboxes is None:
+                gt_bboxes = box_cxcywh_to_xyxy(outputs_coord.clone().view(-1, 4))
+            # (b,c,h,w) --> (b,h,w)
+            out_dict.update({'pred_scores': self.score_branch(search, template, gt_bboxes).view(-1)})
+
+        return out_dict, outputs_coord
+
 
     def forward_box_head(self, search):
         """
@@ -788,13 +818,28 @@ class MixFormer(nn.Module):
         else:
             raise KeyError
 
-def build_mixformer(cfg):
-    backbone = get_mixformer_model(cfg)  # backbone without positional encoding and attention mask
+
+def build_mixformer_cvt_online_score(cfg, settings=None, train=True):
+    backbone = get_mixformer_online_model(cfg)  # backbone without positional encoding and attention mask
     box_head = build_box_head(cfg)  # a simple corner head
-    model = MixFormer(
+    score_branch = ScoreDecoder(pool_size=4, hidden_dim=cfg.MODEL.HIDDEN_DIM, num_heads=cfg.MODEL.HIDDEN_DIM//64)  # the proposed score prediction module (SPM)
+    model = MixFormerOnlineScore(
         backbone,
         box_head,
+        score_branch,
         head_type=cfg.MODEL.HEAD_TYPE
     )
+
+    if cfg.MODEL.PRETRAINED_STAGE1 and train:
+        try:
+            ckpt_path = settings.stage1_model
+            ckpt = torch.load(ckpt_path, map_location='cpu')
+            missing_keys, unexpected_keys = model.load_state_dict(ckpt['net'], strict=False)
+            if is_main_process():
+                print("missing keys:", missing_keys)
+                print("unexpected keys:", unexpected_keys)
+                print("Loading pretrained mixformer weights done.")
+        except:
+            print("Warning: Pretrained mixformer weights are not loaded")
 
     return model

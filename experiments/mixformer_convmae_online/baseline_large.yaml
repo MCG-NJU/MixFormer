@@ -80,13 +80,15 @@ TEST:
   UPDATE_INTERVALS:
     LASOT: [200]
     GOT10K_TEST: [200]
-    TRACKINGNET: [25]
+    TRACKINGNET: [20]
+    UAV: [20]
+    OTB: [10]
     VOT20: [10]
     VOT20LT: [200]
   ONLINE_SIZES:
     LASOT: [2]
-    UAV: [3]
+    UAV: [2]
     OTB: [2]
     GOT10K_TEST: [2]
-    TRACKINGNET: [3]
+    TRACKINGNET: [1]
     VOT20: [5]
