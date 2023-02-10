@@ -11,7 +11,7 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 [[Models and Raw results]](https://drive.google.com/drive/folders/1wyeIs3ytYkmAtTXoVlLMkJ4aSTq5CBHq?usp=sharing) (Google Driver)  [[Models and Raw results]](https://pan.baidu.com/s/1k819gnFMav9t1-8ZhCo74w) (Baidu Driver: hmuv)
 
 
-![MixFormer_Framework](tracking/mixformer_framework.png)
+![MixFormer_Framework](tracking/mixformer_merge_framework.png)
 
 ## News
 
