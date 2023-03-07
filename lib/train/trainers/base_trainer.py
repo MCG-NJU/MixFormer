@@ -87,14 +87,10 @@ class BaseTrainer:
 
                     self.train_epoch()
 
-                    if self.lr_scheduler is not None:
-                        if self.settings.scheduler_type != 'cosine':
-                            self.lr_scheduler.step()
-                        else:
-                            self.lr_scheduler.step(epoch - 1)
-                    else: # warmup and cosine decay
-                        assert self.shed_args is not None
-                        adjust_learning_rate(self.optimizer, self.epoch, self.shed_args)
+                    if self.settings.scheduler_type != 'cosine':
+                        self.lr_scheduler.step()
+                    else:
+                        self.lr_scheduler.step(epoch - 1)
                     # only save the last 10 checkpoints
                     save_every_epoch = getattr(self.settings, "save_every_epoch", False)
                     if epoch > (max_epochs - 10) or save_every_epoch or epoch % 5 == 0:
