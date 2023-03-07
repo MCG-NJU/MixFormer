@@ -152,6 +152,7 @@ def build_dataloaders(cfg, settings):
 def get_optimizer_scheduler(net, cfg):
     train_score = getattr(cfg.TRAIN, "TRAIN_SCORE", False)
     freeze_stage0 = getattr(cfg.TRAIN, "FREEZE_STAGE0", False)
+    freeze_first_6layers = getattr(cfg.TRAIN, "FREEZE_FIRST_6LAYERS", False)
 
     if train_score:
         print("Only training score_branch. Learnable parameters are shown below.")
@@ -168,6 +169,12 @@ def get_optimizer_scheduler(net, cfg):
     elif freeze_stage0: # only for CVT-large backbone
         assert "cvt_24" == cfg.MODEL.VIT_TYPE
         print("Freeze Stage0 of MixFormer cvt backbone. Learnable parameters are shown below.")
+        for n, p in net.named_parameters():
+            if "stage2" not in n and "box_head" not in n and "stage1" not in n:
+                p.requires_grad = False
+            else:
+                if is_main_process():
+                    print(n)
         param_dicts = [
             {"params": [p for n, p in net.named_parameters() if "backbone" not in n and p.requires_grad]},
             {
@@ -175,24 +182,32 @@ def get_optimizer_scheduler(net, cfg):
                 "lr": cfg.TRAIN.LR * cfg.TRAIN.BACKBONE_MULTIPLIER,
             },
         ]
-
+    elif freeze_first_6layers:  # only for ViT-Large backbone
+        assert "large_patch16" == cfg.MODEL.VIT_TYPE
+        print("Freeze the first 6 layers of MixFormer vit backbone. Learnable parameters are shown below.")
         for n, p in net.named_parameters():
-            if "stage2" not in n and "box_head" not in n and "stage1" not in n:
+            if 'blocks.0.' in n or 'blocks.1.' in n or 'blocks.2.' in n or 'blocks.3.' in n or 'blocks.4.' in n or 'blocks.5.' in n \
+                or 'patch_embed' in n:
                 p.requires_grad = False
             else:
                 if is_main_process():
                     print(n)
-    else: # train network except for score prediction module
-        for n, p in net.named_parameters():
-            if "score" in n:
-                p.requires_grad = False
-
         param_dicts = [
             {"params": [p for n, p in net.named_parameters() if "backbone" not in n and p.requires_grad]},
             {
                 "params": [p for n, p in net.named_parameters() if "backbone" in n and p.requires_grad],
                 "lr": cfg.TRAIN.LR * cfg.TRAIN.BACKBONE_MULTIPLIER,
-                "lr_scale": cfg.TRAIN.BACKBONE_MULTIPLIER
+            },
+        ]
+    else: # train network except for score prediction module
+        for n, p in net.named_parameters():
+            if "score" in n:
+                p.requires_grad = False
+        param_dicts = [
+            {"params": [p for n, p in net.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {
+                "params": [p for n, p in net.named_parameters() if "backbone" in n and p.requires_grad],
+                "lr": cfg.TRAIN.LR * cfg.TRAIN.BACKBONE_MULTIPLIER,
             },
         ]
 
