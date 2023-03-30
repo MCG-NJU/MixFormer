@@ -12,7 +12,7 @@ from lib.utils.box_ops import clip_box
 class MixFormer(BaseTracker):
     def __init__(self, params, dataset_name):
         super(MixFormer, self).__init__(params)
-        network = build_mixformer_vit(params.cfg)
+        network = build_mixformer_vit(params.cfg, train=False)
         network.load_state_dict(torch.load(self.params.checkpoint, map_location='cpu')['net'], strict=True)
         self.cfg = params.cfg
         self.network = network.cuda()

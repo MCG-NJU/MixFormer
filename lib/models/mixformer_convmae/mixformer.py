@@ -408,7 +408,7 @@ def get_mixformer_convmae(config, train):
 
     if config.MODEL.BACKBONE.PRETRAINED and train:
         ckpt_path = config.MODEL.BACKBONE.PRETRAINED_PATH
-        ckpt = torch.load(ckpt_path, map_location='cpu') #['model']
+        ckpt = torch.load(ckpt_path, map_location='cpu')['model']
         new_dict = {}
         for k, v in ckpt.items():
             if 'pos_embed' not in k and 'mask_token' not in k:
