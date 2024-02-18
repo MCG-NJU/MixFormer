@@ -17,7 +17,7 @@ The official implementation of the CVPR 2022 paper [**MixFormer: End-to-End Trac
 
 **[Jan 01, 2024]** 
 
-- Extended version has been accepted to T-PAMI 2024 (https://ieeexplore.ieee.org/document/10380715), we would appreciate if you can cite our new trackers (i.e., MixViT, MixViT (ConvMAE)) in your tracking works.
+- Extended version has been accepted to **T-PAMI 2024** (https://ieeexplore.ieee.org/document/10380715), we would appreciate if you can **CITE** our new trackers (i.e., MixViT, MixViT (ConvMAE)) in your tracking works.
 
 **[Feb 10, 2023]** 
 
