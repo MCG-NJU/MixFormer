@@ -184,11 +184,10 @@ If you think this project is helpful, please feel free to leave a star⭐️ and
   pages={13608--13618},
   year={2022}
 }
-@misc{cui2023mixformer,
+@ARTICLE{cui2023mixformer,
+      journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
       title={MixFormer: End-to-End Tracking with Iterative Mixed Attention}, 
       author={Yutao Cui and Cheng Jiang and Gangshan Wu and Limin Wang},
-      year={2023},
-      eprint={2302.02814},
-      archivePrefix={arXiv}
+      year={2024}
 }
 ```
